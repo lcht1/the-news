@@ -53,7 +53,7 @@ export const Header = () => {
                                         <li key={index}>
                                             <a
                                                 href={category.uri}
-                                                className="text-white font-sans hover:underline"
+                                                className="text-white font-medium text-sm sm:text-lg font-sans hover:underline"
                                             >
                                                 {label}
                                             </a>
