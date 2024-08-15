@@ -1,4 +1,4 @@
-import newsOrgApi from ".";
+import theNewYorkTimesApi from ".";
 
 type Media = {
     type: string;
@@ -16,6 +16,8 @@ type Result = {
     uri: string;
     url: string;
     id: number;
+    abstract: string;
+    byline: string;
     asset_id: number;
     source: string;
     published_date: string;
@@ -33,11 +35,14 @@ type Response = {
     results: Result[];
 };
 
-export async function getMostPopular(): Promise<Response> {
-    const response = await newsOrgApi.get(`/top-headlines`, {
-        params: {
-            apiKey: import.meta.env.VITE_THE_NEW_YORK_TIMES_API_KEY,
-        },
-    });
+export async function getMostPopularOnTheLastDay(): Promise<Response> {
+    const response = await theNewYorkTimesApi.get(
+        `/mostpopular/v2/viewed/1.json`,
+        {
+            params: {
+                "api-key": import.meta.env.VITE_THE_NEW_YORK_TIMES_API_KEY,
+            },
+        }
+    );
     return response.data;
 }
