@@ -1,14 +1,14 @@
 import newsApi from ".";
 
 type Params = {
-    apiKey: string;
-    articlesPage: number;
-    articlesCount: number;
-    articlesSortBy: string;
-    query: string;
-    categoryUri: string;
-    sourceUri: string;
-    authorUri: string;
+    articlesPage?: number;
+    articlesCount?: number;
+    articlesSortBy?: string;
+    query?: string;
+    keyword?: string;
+    categoryUri?: string;
+    sourceUri?: string;
+    authorUri?: string;
 };
 
 type Article = {
@@ -59,18 +59,18 @@ type Article = {
 };
 
 type Response = {
-    results: Article[];
+    articles: { results: Article[] };
     totalResults: number;
     page: number;
     count: number;
     pages: number;
 };
 
-export async function getArticles(props: Params): Promise<Response> {
-    const response = await newsApi.get(`/top-headlines`, {
+export async function getArticles(props?: Params): Promise<Response> {
+    const response = await newsApi.get(`/article/getArticles`, {
         params: {
-            apiKey: import.meta.env.VITE_NEWS_ORG_API_KEY,
-            props,
+            apiKey: import.meta.env.VITE_NEWS_API_KEY,
+            ...props,
         },
     });
     return response.data;

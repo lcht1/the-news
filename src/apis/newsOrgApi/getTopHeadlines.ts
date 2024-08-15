@@ -7,6 +7,7 @@ type Params = {
     q?: string;
     pageSize?: number;
     page?: number;
+    language?: string;
 };
 type Response = {
     status: string;
@@ -29,8 +30,8 @@ type Response = {
 export async function getTopHeadlines(props: Params): Promise<Response> {
     const response = await newsOrgApi.get(`/top-headlines`, {
         params: {
-            apiKey: import.meta.env.VITE_NEWS_ORG_API_KEY,
-            props,
+            apiKey: import.meta.env.VITE_NEWS_API_ORG_KEY,
+            ...props,
         },
     });
     return response.data;
