@@ -1,7 +1,7 @@
-import { Header } from "./components/Header";
+import { PublicRoutes } from "./apis/routes/public.routes";
 
 function App() {
-    return <Header />;
+    return <PublicRoutes />;
 }
 
 export default App;

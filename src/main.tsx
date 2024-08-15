@@ -6,14 +6,9 @@ import App from "./App.tsx";
 import { QueryClient } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
+import { BrowserRouter } from "react-router-dom";
 
-const queryClient = new QueryClient({
-    defaultOptions: {
-        queries: {
-            gcTime: 1000 * 60 * 60 * 10,
-        },
-    },
-});
+const queryClient = new QueryClient({});
 const persister = createSyncStoragePersister({
     storage: window.localStorage,
 });
@@ -23,7 +18,9 @@ createRoot(document.getElementById("root")!).render(
             client={queryClient}
             persistOptions={{ persister }}
         >
-            <App />
+            <BrowserRouter>
+                <App />
+            </BrowserRouter>
         </PersistQueryClientProvider>
     </StrictMode>
 );
