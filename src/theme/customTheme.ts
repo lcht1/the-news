@@ -9,6 +9,7 @@ export const customTheme = {
         blue: "#007BFF",
         red: "#FF4D4D",
         gray: "#333333",
+        "light-gray": "#e6e8ea",
         white: "#F9F9F9",
     },
     fontFamily: {
