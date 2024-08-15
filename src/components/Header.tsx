@@ -1,30 +1,21 @@
-import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { SearchInput } from "./SearchInput";
-import { getCategories } from "../apis/newsApi/getCategories";
-import { useMemo } from "react";
 
-export const Header = () => {
-    const extractLabel = (label: string) => {
-        const parts = label.split("/");
-        return parts.length > 1 && parts[1].trim() !== "" ? parts[1] : null;
+type Props = {
+    categories: { label: string | null; uri: string }[];
+    isCategoriesLoading: boolean;
+    errorCategories?: unknown;
+};
+export const Header = ({
+    categories,
+    isCategoriesLoading,
+    errorCategories,
+}: Props) => {
+    const navigate = useNavigate();
+
+    const handleSearch = (query: string) => {
+        navigate(`/search?query=${encodeURIComponent(query)}`);
     };
-
-    const {
-        data: categories,
-        isLoading,
-        error,
-    } = useQuery({
-        queryKey: ["categories"],
-        queryFn: getCategories,
-        refetchOnMount: false,
-
-        staleTime: 1000 * 60 * 60 * 2,
-    });
-
-    const displayedCategories = useMemo(() => {
-        return categories ? categories.slice(0, 10) : [];
-    }, [categories]);
-
     return (
         <header className="bg-white ">
             <div className=" flex-col justify-between items-center">
@@ -32,30 +23,28 @@ export const Header = () => {
                     <h1 className="font-serif text-gray text-4xl font-bold  mb-2">
                         The News
                     </h1>
-                    <SearchInput onSearch={() => {}} />
+                    <SearchInput onSearch={handleSearch} />
                 </div>
                 <nav className="bg-gray  flex justify-center relative h-20 p-3">
                     <ul className="flex space-x-4 flex-wrap max-w-3xl  content-center items-center justify-center gap-1.5">
-                        {isLoading ? (
+                        {isCategoriesLoading ? (
                             <div className="text-white">
                                 Loading categories...
                             </div>
-                        ) : error ? (
+                        ) : errorCategories ? (
                             <div className="text-red-500">
                                 Error loading categories.
                             </div>
                         ) : (
                             <ul className="flex space-x-4 flex-wrap max-w-3xl content-center items-center justify-center gap-1.5">
-                                {displayedCategories.map((category, index) => {
-                                    const label = extractLabel(category.label);
-                                    if (!label) return null;
+                                {categories.map((category, index) => {
                                     return (
                                         <li key={index}>
                                             <a
                                                 href={category.uri}
                                                 className="text-white font-medium text-sm sm:text-lg font-sans hover:underline"
                                             >
-                                                {label}
+                                                {category.label}
                                             </a>
                                         </li>
                                     );
