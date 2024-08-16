@@ -13,7 +13,11 @@ export const useArticlesByDisplayedCategories = (
             staleTime: 1000 * 60 * 60 * 10,
         })),
     });
-    const resultsWithCategories = articleQueries
+    const isResultsWithCategoriesLoading = articleQueries.some(
+        (query) => query.isLoading
+    );
+
+    const articlesWithCategories = articleQueries
         .map((query, index) => {
             if (query.isSuccess) {
                 const filteredResults = query.data.articles.results.filter(
@@ -29,5 +33,5 @@ export const useArticlesByDisplayedCategories = (
         })
         .filter((item) => item?.categoryLabel);
 
-    return resultsWithCategories;
+    return { articlesWithCategories, isResultsWithCategoriesLoading };
 };

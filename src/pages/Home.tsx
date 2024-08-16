@@ -1,45 +1,25 @@
 import { useQuery } from "@tanstack/react-query";
-import { Header } from "../components/Header";
 import { useMemo } from "react";
-import { getMostPopularOnTheLastDay } from "../apis/theNewYorkTimesApi/getMostPopularOnTheLastDay";
-import { PopularArticleCard } from "../components/PopularArticleCard";
-import ClipLoader from "react-spinners/ClipLoader";
-import { getTopHeadlines } from "../apis/newsOrgApi/getTopHeadlines";
-import { AsideArticleCard } from "../components/AsideArticleCard";
-import { timeAgo } from "../utils/timeAgo";
-import { getCategories } from "../apis/newsApi/getCategories";
-import { useArticlesByDisplayedCategories } from "../hooks/useArticlesByDisplayedCategories";
-import { useNavigate } from "react-router-dom";
 import { MdKeyboardArrowRight } from "react-icons/md";
+import Skeleton from "react-loading-skeleton";
+import { useNavigate } from "react-router-dom";
+import { getTopHeadlines } from "../apis/newsOrgApi/getTopHeadlines";
+import { getMostPopularOnTheLastDay } from "../apis/theNewYorkTimesApi/getMostPopularOnTheLastDay";
+import { ArticleCard } from "../components/ArticleCard";
+import { Header } from "../components/Header";
+import { PopularArticleCard } from "../components/PopularArticleCard";
+import { useArticlesByDisplayedCategories } from "../hooks/useArticlesByDisplayedCategories";
+import useCategories from "../hooks/useCategories";
+import { timeAgo } from "../utils/timeAgo";
 
 export const Home = () => {
     const navigate = useNavigate();
 
-    const extractLabel = (label: string) => {
-        const parts = label.split("/");
-        return parts.length > 1 && parts[1].trim() !== "" ? parts[1] : null;
-    };
-
     const {
-        data: categories,
+        categories,
         isLoading: isCategoriesLoading,
         error: errorCategories,
-    } = useQuery({
-        queryKey: ["categories"],
-        queryFn: getCategories,
-        refetchOnMount: false,
-
-        staleTime: 1000 * 60 * 60 * 10,
-    });
-
-    const displayedCategories = useMemo(() => {
-        return categories
-            ? categories.slice(0, 10).map((category) => ({
-                  ...category,
-                  label: extractLabel(category.label),
-              }))
-            : [];
-    }, [categories]);
+    } = useCategories();
 
     const { data: mostPopular, isLoading: isMostPopularLoading } = useQuery({
         queryKey: ["mostPopular"],
@@ -69,105 +49,129 @@ export const Home = () => {
         staleTime: 1000 * 60 * 60 * 10,
     });
 
-    const articlesWithCategories =
-        useArticlesByDisplayedCategories(displayedCategories);
+    const { articlesWithCategories, isResultsWithCategoriesLoading } =
+        useArticlesByDisplayedCategories(categories);
 
+    const getColSpanClass = (index: number, length: number) => {
+        if (index === 0 || index === length - 1) {
+            return "col-span-2";
+        }
+        return "col-span-1";
+    };
     return (
         <>
             <Header
-                categories={displayedCategories}
+                categories={categories}
                 isCategoriesLoading={isCategoriesLoading}
                 errorCategories={errorCategories}
             />
             <main className="max-w-screen-md xl:max-w-screen-xl lg:max-w-screen-lg m-4 md:m-auto md:my-4 ">
                 <section className="grid grid-cols-1 gap-y-4 lg:gap-4 lg:grid-cols-4 ">
-                    {isMostPopularLoading ? (
-                        <div className="m-auto col-span-4">
-                            <ClipLoader />
-                        </div>
-                    ) : (
-                        filteredMostPopularArticles?.map((article, index) => (
-                            <div
-                                key={article.id}
-                                className={`${
-                                    index === 0
-                                        ? "col-span-2"
-                                        : index ===
-                                          filteredMostPopularArticles.length - 1
-                                        ? "col-span-2"
-                                        : "col-span-1"
-                                }`}
-                            >
-                                <PopularArticleCard
-                                    title={article.title}
-                                    abstract={article.abstract}
-                                    photos={article.photos}
-                                    url={article.url}
-                                />
-                            </div>
-                        ))
-                    )}
+                    {isMostPopularLoading
+                        ? Array(6)
+                              .fill(0)
+                              .map((_, index) => (
+                                  <div
+                                      className={getColSpanClass(index, 6)}
+                                      key={index}
+                                  >
+                                      <Skeleton height={200} />
+                                  </div>
+                              ))
+                        : filteredMostPopularArticles?.map((article, index) => (
+                              <div
+                                  key={article.id}
+                                  className={getColSpanClass(
+                                      index,
+                                      filteredMostPopularArticles.length
+                                  )}
+                              >
+                                  <PopularArticleCard
+                                      title={article.title}
+                                      abstract={article.abstract}
+                                      photos={article.photos}
+                                      url={article.url}
+                                  />
+                              </div>
+                          ))}
                 </section>
                 <div className="grid md:grid-cols-4 grid-cols-2 mt-12">
                     <section className="col-span-3 order-2 md:order-1">
-                        {!filteredMostPopularArticles ? (
-                            <div className="m-auto col-span-4">
-                                <ClipLoader />
-                            </div>
-                        ) : (
-                            articlesWithCategories?.map((article) => (
-                                <div className="my-4">
-                                    <div className="flex items-center">
-                                        <div className="w-1 h-6 bg-blue mr-2"></div>
-                                        <h4
-                                            className="w-full flex flex-row items-center gap-2 cursor-pointer font-serif font-bold text-3xl text-gray mr-4"
-                                            onClick={() =>
-                                                navigate(
-                                                    `/category?${article?.categoryUri}`
-                                                )
-                                            }
-                                        >
-                                            {article?.categoryLabel}
-                                            <MdKeyboardArrowRight
-                                                size={24}
-                                                className="mt-2"
-                                            />
-                                        </h4>
-                                    </div>
-                                    <div className="grid md:grid-cols-3 grid-cols-2">
-                                        {article?.results.map((result) => (
-                                            <AsideArticleCard
-                                                key={result.uri}
-                                                publishedAt={timeAgo(
-                                                    result.dateTime
-                                                )}
-                                                image={result.image}
-                                                title={result.title}
-                                                url={result.url}
-                                            />
-                                        ))}
-                                    </div>
-                                </div>
-                            ))
-                        )}
+                        {isResultsWithCategoriesLoading
+                            ? Array(3)
+                                  .fill(0)
+                                  .map((_, index) => (
+                                      <div className="my-4" key={index}>
+                                          <Skeleton count={1} width={100} />
+                                          <div className="grid md:grid-cols-3 grid-cols-2 gap-4">
+                                              {Array(6)
+                                                  .fill(0)
+                                                  .map((_, index) => (
+                                                      <Skeleton
+                                                          key={index}
+                                                          height={200}
+                                                      />
+                                                  ))}
+                                          </div>
+                                      </div>
+                                  ))
+                            : articlesWithCategories?.map((article, index) => (
+                                  <div className="my-4" key={index}>
+                                      <div className="flex items-center">
+                                          <div className="w-1 h-6 bg-blue mr-2"></div>
+                                          <h4
+                                              className="w-full flex flex-row items-center gap-2 cursor-pointer font-serif font-bold text-3xl text-gray mr-4"
+                                              onClick={() =>
+                                                  navigate(
+                                                      `/category/${article?.categoryUri}`
+                                                  )
+                                              }
+                                          >
+                                              {article?.categoryLabel}
+                                              <MdKeyboardArrowRight
+                                                  size={24}
+                                                  className="mt-2"
+                                              />
+                                          </h4>
+                                      </div>
+                                      <div className="grid md:grid-cols-3 grid-cols-2 gap-4">
+                                          {article?.results.map((result) => (
+                                              <ArticleCard
+                                                  key={result.uri}
+                                                  publishedAt={timeAgo(
+                                                      result.dateTime
+                                                  )}
+                                                  image={result.image}
+                                                  title={result.title}
+                                                  url={result.url}
+                                              />
+                                          ))}
+                                      </div>
+                                  </div>
+                              ))}
                     </section>
+
                     <aside className="md:col-span-1 col-span-2 order-1">
                         <h4 className="p-4 text-xl font-bold text-blue">
                             In case you missed it...
                         </h4>
-                        {isTopHeadlinesLoading ? (
-                            <ClipLoader />
-                        ) : (
-                            topHeadlines?.articles.map((article) => (
-                                <AsideArticleCard
-                                    key={article.title}
-                                    author={article.author}
-                                    publishedAt={timeAgo(article.publishedAt)}
-                                    title={article.title}
-                                    url={article.url}
-                                />
-                            ))
-                        )}
+                        {isTopHeadlinesLoading
+                            ? Array(6)
+                                  .fill(0)
+                                  .map((_, index) => (
+                                      <div className="p-2" key={index}>
+                                          <Skeleton count={4} />
+                                      </div>
+                                  ))
+                            : topHeadlines?.articles.map((article) => (
+                                  <ArticleCard
+                                      key={article.title}
+                                      author={article.author}
+                                      publishedAt={timeAgo(article.publishedAt)}
+                                      title={article.title}
+                                      url={article.url}
+                                  />
+                              ))}
                     </aside>
                 </div>
             </main>
