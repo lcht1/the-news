@@ -29,7 +29,7 @@ export const Header = ({
                     <SearchInput onSearch={handleSearch} />
                 </div>
                 {categories ? (
-                    <nav className="bg-gray  flex justify-center relative h-20 p-3">
+                    <nav className="bg-gray  flex justify-center relative p-5">
                         <ul className="flex space-x-4 flex-wrap max-w-3xl  content-center items-center justify-center gap-1.5">
                             {isCategoriesLoading ? (
                                 <div className="text-white">
