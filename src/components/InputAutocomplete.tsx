@@ -1,23 +1,44 @@
 import { useQuery } from "@tanstack/react-query";
 import debounce from "lodash.debounce";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { IoMdClose } from "react-icons/io";
+import { extractCategoryLabel } from "../hooks/extractCategoryLabel";
 
-type Props<T> = {
-    fetchSuggestions: (query: string) => Promise<T[]>;
-    onSuggestionClick: (suggestion: T) => void;
+export type Suggestion =
+    | { uri: string; title?: string; label?: never }
+    | { uri: string; title?: never; label: string };
+
+type Props = {
+    fetchSuggestions: (query: string) => Promise<Suggestion[]>;
+    onSuggestionClick: (suggestion: Suggestion) => void;
     placeholder?: string;
-    valueKey: keyof T;
-    labelKey: keyof T;
+    valueKey: keyof Suggestion;
+    labelKey: keyof Suggestion;
+    extractLabel?: boolean;
 };
 
-export const InputAutocomplete = <T extends Record<string, React.ReactNode>>({
+const getUniqueLabels = (suggestions: Suggestion[]): Suggestion[] => {
+    const uniqueLabels = new Map<string, Suggestion>();
+
+    suggestions.forEach((suggestion) => {
+        const parts = suggestion.uri.split("/");
+        const key = parts.length > 1 ? parts[1] : parts[0];
+        if (!uniqueLabels.has(key)) {
+            uniqueLabels.set(key, suggestion);
+        }
+    });
+
+    return Array.from(uniqueLabels.values());
+};
+
+export const InputAutocomplete = ({
     fetchSuggestions,
     onSuggestionClick,
     placeholder = "Search...",
     valueKey,
     labelKey,
-}: Props<T>) => {
+    extractLabel = false,
+}: Props) => {
     const [inputValue, setInputValue] = useState("");
     const [debouncedInputValue, setDebouncedInputValue] = useState("");
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -41,32 +62,41 @@ export const InputAutocomplete = <T extends Record<string, React.ReactNode>>({
         staleTime: 1000 * 60 * 5,
     });
 
+    const uniqueSuggestions = useMemo(
+        () => getUniqueLabels(suggestions || []),
+        [suggestions]
+    );
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setInputValue(e.target.value);
         setIsDropdownOpen(true);
     };
 
-    const handleSuggestionClick = (suggestion: T) => {
-        setInputValue(suggestion[labelKey] as string);
+    const handleSuggestionClick = (suggestion: Suggestion) => {
+        const label = extractLabel
+            ? extractCategoryLabel(suggestion[labelKey] as string)
+            : (suggestion[labelKey] as string);
+
+        setInputValue(label ?? "");
         onSuggestionClick(suggestion);
         setIsDropdownOpen(false);
     };
 
     const handleClearInput = () => {
         setInputValue("");
-        onSuggestionClick({} as T);
+        onSuggestionClick({ uri: "" }); // Ajuste se necessário
         setIsDropdownOpen(false);
     };
 
     return (
         <div className="relative inline-block text-left">
-            <div className="flex items-center justify-between  w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white">
+            <div className="flex items-center justify-between w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white">
                 <input
                     type="text"
                     value={inputValue}
                     onChange={handleInputChange}
                     placeholder={placeholder}
-                    className="bg-white border-none outline-none  text-sm font-medium text-gray-700 placeholder-gray-400 "
+                    className="bg-white border-none outline-none text-sm font-medium text-gray-700 placeholder-gray-400"
                 />
                 {inputValue ? (
                     <IoMdClose
@@ -80,7 +110,7 @@ export const InputAutocomplete = <T extends Record<string, React.ReactNode>>({
                     {isLoading ? (
                         <p className="text-sm text-gray-500">Loading...</p>
                     ) : (
-                        suggestions?.length === 0 && (
+                        uniqueSuggestions.length === 0 && (
                             <p className="text-sm text-gray-500">No results.</p>
                         )
                     )}
@@ -89,21 +119,19 @@ export const InputAutocomplete = <T extends Record<string, React.ReactNode>>({
                             Error: {error.message}
                         </p>
                     )}
-                    {suggestions && suggestions.length > 0 && (
-                        <ul className="py-1">
-                            {suggestions.map((suggestion) => (
-                                <li
-                                    key={suggestion[valueKey] as string}
-                                    onClick={() =>
-                                        handleSuggestionClick(suggestion)
-                                    }
-                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
-                                >
-                                    {suggestion[labelKey]}
-                                </li>
-                            ))}
-                        </ul>
-                    )}
+                    {uniqueSuggestions.map((suggestion) => (
+                        <li
+                            key={suggestion[valueKey] as string}
+                            onClick={() => handleSuggestionClick(suggestion)}
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                        >
+                            {extractLabel
+                                ? extractCategoryLabel(
+                                      suggestion[labelKey] as string
+                                  )
+                                : suggestion[labelKey]}
+                        </li>
+                    ))}
                 </div>
             )}
         </div>
