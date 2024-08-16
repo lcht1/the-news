@@ -9,19 +9,17 @@ import { getSources } from "../apis/newsApi/getSources";
 import { ArticleCard } from "../components/ArticleCard";
 import { FilterDropdown, Option } from "../components/FilterDropdown";
 import { Header } from "../components/Header";
-import { InputAutocomplete } from "../components/InputAutocomplete";
+import { InputAutocomplete, Suggestion } from "../components/InputAutocomplete";
 import { dateOptions } from "../constants/dateOptions";
 import { timeAgo } from "../utils/timeAgo";
 
-type Source = {
-    uri: string;
-    title: string;
-};
 export const Category = () => {
     const [currentPage, setCurrentPage] = useState(1);
-    const PAGE_SIZE = 100;
+    const PAGE_SIZE = 50;
     const [selectedDate, setSelectedDate] = useState<Option | null>(null);
-    const [selectedSource, setSelectedSource] = useState<Source>({} as Source);
+    const [selectedSource, setSelectedSource] = useState<Suggestion>(
+        {} as Suggestion
+    );
     const dateStart =
         selectedDate?.value &&
         format(new Date(selectedDate.value), "yyyy-MM-dd");
@@ -69,7 +67,7 @@ export const Category = () => {
                             selectedOption={selectedDate?.label}
                             onOptionSelect={setSelectedDate}
                         />
-                        <InputAutocomplete<Source>
+                        <InputAutocomplete
                             fetchSuggestions={getSources}
                             onSuggestionClick={setSelectedSource}
                             placeholder="Search sources"
@@ -130,7 +128,7 @@ export const Category = () => {
                         </button>
                     </div>
                 ) : (
-                    <span>No results.</span>
+                    !isArticlesLoading && <span>No results.</span>
                 )}
             </main>
         </>

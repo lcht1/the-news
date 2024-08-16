@@ -1,27 +1,26 @@
 import { useQuery } from "@tanstack/react-query";
 import { getCategories } from "../apis/newsApi/getCategories";
-import { extractLabel } from "./extractCategoryLabel";
+import { extractCategoryLabel } from "./extractCategoryLabel";
 
-const useCategories = () => {
+const useCategories = (size?: number) => {
     const { data, isLoading, error } = useQuery({
         queryKey: ["categories"],
-        queryFn: getCategories,
+        queryFn: () => getCategories(),
         refetchOnMount: false,
         staleTime: 1000 * 60 * 60 * 10,
     });
 
     const categories = data
         ? data
-              .slice(0, 10)
               .map((category) => ({
                   ...category,
-                  label: extractLabel(category.label),
+                  label: extractCategoryLabel(category.label),
               }))
               .filter((category) => category.label)
         : [];
 
     return {
-        categories,
+        categories: size ? categories.slice(0, size) : categories,
         isLoading,
         error,
     };

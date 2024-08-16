@@ -19,7 +19,7 @@ export const Home = () => {
         categories,
         isLoading: isCategoriesLoading,
         error: errorCategories,
-    } = useCategories();
+    } = useCategories(10);
 
     const { data: mostPopular, isLoading: isMostPopularLoading } = useQuery({
         queryKey: ["mostPopular"],
