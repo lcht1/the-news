@@ -5,13 +5,13 @@ import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { useParams } from "react-router-dom";
 import { getArticles } from "../apis/newsApi/getArticles";
+import { getSources } from "../apis/newsApi/getSources";
 import { ArticleCard } from "../components/ArticleCard";
 import { FilterDropdown, Option } from "../components/FilterDropdown";
 import { Header } from "../components/Header";
+import { InputAutocomplete } from "../components/InputAutocomplete";
 import { dateOptions } from "../constants/dateOptions";
 import { timeAgo } from "../utils/timeAgo";
-import { InputAutocomplete } from "../components/InputAutocomplete";
-import { getSources } from "../apis/newsApi/getSources";
 
 type Source = {
     uri: string;
