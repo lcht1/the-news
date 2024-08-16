@@ -9,6 +9,7 @@ type Params = {
     categoryUri?: string;
     sourceUri?: string;
     authorUri?: string;
+    dateStart?: string;
 };
 
 type Article = {
@@ -59,11 +60,13 @@ type Article = {
 };
 
 type Response = {
-    articles: { results: Article[] };
-    totalResults: number;
-    page: number;
-    count: number;
-    pages: number;
+    articles: {
+        results: Article[];
+        totalResults: number;
+        page: number;
+        count: number;
+        pages: number;
+    };
 };
 
 export async function getArticles(props?: Params): Promise<Response> {
