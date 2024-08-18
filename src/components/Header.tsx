@@ -47,7 +47,7 @@ export const Header = ({
                                                 <a
                                                     onClick={() =>
                                                         navigate(
-                                                            `category/${category.uri}`
+                                                            `/category/${category.uri}`
                                                         )
                                                     }
                                                     className="cursor-pointer text-white font-medium text-sm sm:text-lg font-sans hover:underline"

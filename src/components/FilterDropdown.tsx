@@ -30,7 +30,7 @@ export const FilterDropdown = ({
         <div className="relative inline-block text-left">
             <button
                 type="button"
-                className="inline-flex justify-between w-full rounded-md border border-gray-300 shadow-sm px-4 py-1 bg-white text-xs font-medium text-gray  focus:outline-none"
+                className="inline-flex justify-between w-full rounded-md border  shadow-sm px-4 py-1 bg-white text-xs font-medium text-gray  focus:outline-none"
                 onClick={() => setIsOpen(!isOpen)}
             >
                 {selectedOption || label}

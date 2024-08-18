@@ -182,12 +182,12 @@ export const Home = () => {
                     <section className="col-span-3 order-2 md:order-1 mt-8">
                         <div className="flex flex-row items-center">
                             <div className="w-1 h-6 bg-blue mr-2"></div>
-                            <h4 className="w-full flex flex-row items-center gap-2 cursor-pointer font-serif font-bold text-3xl text-gray mr-4">
+                            <h4 className="w-full flex flex-row items-center gap-2  font-serif font-bold text-3xl text-gray mr-4">
                                 Based on your preferences
                             </h4>
                             <button
                                 onClick={handleRefreshPreferredArticles}
-                                className=" text-blue px-4 py-2 rounded flex-row flex items-center gap-1 underline"
+                                className=" text-blue px-4 py-2 rounded flex-row flex items-center gap-1 underline cursor-pointer"
                             >
                                 Refresh
                                 <IoIosRefresh />

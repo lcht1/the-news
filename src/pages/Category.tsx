@@ -13,6 +13,7 @@ import LoadingSkeleton from "../components/LoadingSkeleton";
 import { Pagination } from "../components/Pagination";
 import { dateOptions } from "../constants/dateOptions";
 import { timeAgo } from "../utils/timeAgo";
+import useCategories from "../hooks/useCategories";
 
 const PAGE_SIZE = 50;
 
@@ -48,6 +49,11 @@ export const Category = () => {
         refetchOnWindowFocus: false,
     });
 
+    const {
+        categories: defaultCategories,
+        isLoading: isCategoriesLoading,
+        error: errorCategories,
+    } = useCategories(10);
     const filteredArticles = useMemo(() => {
         return articlesList?.articles.results.filter(
             (article) => !article.isDuplicate && article.title
@@ -60,13 +66,17 @@ export const Category = () => {
 
     return (
         <>
-            <Header />
+            <Header
+                categories={defaultCategories}
+                errorCategories={errorCategories}
+                isCategoriesLoading={isCategoriesLoading}
+            />
             <main className="max-w-screen-md xl:max-w-screen-xl lg:max-w-screen-lg m-4 md:m-auto md:my-4">
                 <div className="flex-col mb-10">
                     <span className="text-blue font-sans font-bold">
                         Filter by:
                     </span>
-                    <div className="flex gap-2 flex-col md:flex-row">
+                    <div className="flex gap-2 flex-col md:flex-row md:w-1/3">
                         <FilterDropdown
                             label="Date"
                             options={dateOptions}
@@ -90,11 +100,11 @@ export const Category = () => {
                     </h4>
                 </div>
 
-                <div className="grid md:grid-cols-2 grid-cols-1 gap-2">
+                <div className="grid md:grid-cols-3 grid-cols-2 gap-2">
                     {isArticlesLoading ? (
                         <LoadingSkeleton
-                            count={PAGE_SIZE}
-                            countLines={4}
+                            count={12}
+                            height={200}
                             name="skeleton"
                         />
                     ) : articlesError ? (
@@ -109,7 +119,6 @@ export const Category = () => {
                                 image={article.image}
                                 title={article.title}
                                 url={article.url}
-                                variant="row"
                             />
                         ))
                     ) : (

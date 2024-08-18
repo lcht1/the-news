@@ -29,6 +29,7 @@ export const SearchInput = ({
                 className="text-sm w-full h-full p-2 border border-gray-300 rounded-l-md focus:outline-none focus:border-blue"
             />
             <button
+                disabled={!query}
                 type="submit"
                 className="bg-gray text-white font-bold text-sm p-2 rounded-r-md hover:bg-blue-700 h-full flex items-center"
             >

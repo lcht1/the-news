@@ -95,7 +95,7 @@ export const Search = () => {
                     </div>
                 </div>
 
-                <div className="grid md:grid-cols-2 grid-cols-1 gap-2">
+                <div className="grid md:grid-cols-3 grid-cols-2 gap-2">
                     {isArticlesLoading ? (
                         <LoadingSkeleton
                             count={PAGE_SIZE}
@@ -113,7 +113,6 @@ export const Search = () => {
                                 image={result.image}
                                 title={result.title}
                                 url={result.url}
-                                variant="row"
                             />
                         ))
                     )}

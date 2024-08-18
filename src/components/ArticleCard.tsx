@@ -5,7 +5,6 @@ type Props = {
     author?: string;
     source?: string;
     image?: string;
-    variant?: "row" | "column";
 };
 export const ArticleCard = ({
     title,
@@ -14,24 +13,17 @@ export const ArticleCard = ({
     author,
     image,
     source,
-    variant = "column",
 }: Props) => {
     return (
         <div
             onClick={() => window.open(url)}
-            className={`cursor-pointer border-b-2 border-light-gray p-4 ${
-                variant === "row" && "flex flex-row gap-4"
-            }`}
+            className="cursor-pointer border-b-2 border-light-gray p-4"
         >
             {image ? (
                 <img
                     src={image}
                     alt={`Image of the article: ${title}`}
-                    className={` ${
-                        variant === "row"
-                            ? "w-40 h-40"
-                            : "w-full h-28 md:h-40 lg:h-58"
-                    }`}
+                    className={"w-full h-28 md:h-40 lg:h-58"}
                 />
             ) : null}
             <div className="flex flex-col justify-between">
