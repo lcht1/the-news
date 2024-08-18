@@ -1,11 +1,12 @@
 import { IoMdClose } from "react-icons/io";
+import { getAuthors } from "../apis/newsApi/getAuthors";
 import { getCategories } from "../apis/newsApi/getCategories";
 import { getSources } from "../apis/newsApi/getSources";
+import { customTheme } from "../theme/customTheme";
 import { InputAutocomplete, Suggestion } from "./InputAutocomplete";
-import { getAuthors } from "../apis/newsApi/getAuthors";
+import { extractCategoryLabel } from "../hooks/extractCategoryLabel";
 
 type Props = {
-    handleSave: () => void;
     onRequestClose: () => void;
     selectedItems: {
         sources: Suggestion[];
@@ -29,21 +30,35 @@ export const PreferencesModal = ({
     selectedItems,
     onSelect,
     onRemove,
-    handleSave,
 }: Props) => {
+    const isItemSelected = (
+        type: "sources" | "categories" | "authors",
+        item: Suggestion
+    ) => {
+        return selectedItems[type].some(
+            (selectedItem) => selectedItem.uri === item.uri
+        );
+    };
+
     const handleSelect = (
         type: "sources" | "categories" | "authors",
         item: Suggestion
     ) => {
+        if (isItemSelected(type, item)) {
+            return;
+        }
+
         if (type === "sources") {
             onSelect.source(item);
         } else if (type === "categories") {
-            onSelect.category(item);
+            onSelect.category({
+                ...item,
+                label: extractCategoryLabel(item.label as string) as string,
+            });
         } else if (type === "authors") {
             onSelect.author(item);
         }
     };
-
     return (
         <div className="p-3 rounded-lg max-w-3xl w-full ">
             <div className="mb-4">
@@ -71,17 +86,11 @@ export const PreferencesModal = ({
                     </div>
                     <ul className="flex flex-row flex-wrap gap-2">
                         {selectedItems.sources.map((source, index) => (
-                            <li
-                                key={index}
-                                className="flex items-center text-xs"
-                            >
-                                {source.title}
-                                <IoMdClose
-                                    onClick={() => onRemove.source(index)}
-                                    size={10}
-                                    className="cursor-pointer text-red-500 ml-1"
-                                />
-                            </li>
+                            <SelectedItem
+                                onRemove={() => onRemove.source(index)}
+                                title={source.title}
+                                uri={source.uri}
+                            />
                         ))}
                     </ul>
                 </div>
@@ -89,33 +98,28 @@ export const PreferencesModal = ({
                 <div className="flex flex-col ">
                     <div className="flex gap-2 items-center">
                         <span className="text-sm font-bold"> Categories</span>
-
-                        <InputAutocomplete
-                            fetchSuggestions={getCategories}
-                            onSuggestionClick={(item) =>
-                                handleSelect("categories", item)
-                            }
-                            placeholder="Search for categories..."
-                            valueKey="uri"
-                            labelKey="label"
-                            extractLabel
-                            clearOnSelection
-                            name="categories"
-                        />
+                        <div className="w-full">
+                            <InputAutocomplete
+                                fetchSuggestions={getCategories}
+                                onSuggestionClick={(item) =>
+                                    handleSelect("categories", item)
+                                }
+                                placeholder="Search for categories..."
+                                valueKey="uri"
+                                labelKey="label"
+                                extractLabel
+                                clearOnSelection
+                                name="categories"
+                            />
+                        </div>
                     </div>
                     <ul className="flex flex-row flex-wrap gap-2">
                         {selectedItems.categories.map((category, index) => (
-                            <li
-                                key={index}
-                                className="flex items-center text-xs"
-                            >
-                                {category.label}
-                                <IoMdClose
-                                    onClick={() => onRemove.category(index)}
-                                    size={10}
-                                    className="cursor-pointer text-red-500 ml-1"
-                                />
-                            </li>
+                            <SelectedItem
+                                onRemove={() => onRemove.category(index)}
+                                title={category.label}
+                                uri={category.uri}
+                            />
                         ))}
                     </ul>
                 </div>
@@ -137,36 +141,39 @@ export const PreferencesModal = ({
                     </div>
                     <ul className="flex flex-row flex-wrap gap-2">
                         {selectedItems.authors.map((author, index) => (
-                            <li
-                                key={index}
-                                className="flex items-center text-xs"
-                            >
-                                {author.title}
-                                <IoMdClose
-                                    onClick={() => onRemove.author(index)}
-                                    size={10}
-                                    className="cursor-pointer text-red-500 ml-1"
-                                />
-                            </li>
+                            <SelectedItem
+                                onRemove={() => onRemove.author(index)}
+                                title={author.name}
+                                uri={author.uri}
+                            />
                         ))}
                     </ul>
                 </div>
 
-                <div className="flex flex-row gap-2 justify-center ">
-                    <button
-                        className=" rounded-md px-2 text-blue font-bold"
-                        onClick={onRequestClose}
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        className="bg-blue rounded-md px-2 py-1 text-white font-bold"
-                        onClick={handleSave}
-                    >
-                        Save
-                    </button>
-                </div>
+                <button
+                    className="bg-gray rounded-md px-2 py-1 text-white font-bold"
+                    onClick={onRequestClose}
+                >
+                    Ok
+                </button>
             </div>
         </div>
     );
 };
+
+type SelectedItemProps = {
+    uri: string;
+    title?: string;
+    onRemove: () => void;
+};
+const SelectedItem = ({ title, onRemove, uri }: SelectedItemProps) => (
+    <li key={uri} className="flex items-center text-xs">
+        {title}
+        <IoMdClose
+            onClick={onRemove}
+            size={10}
+            color={customTheme.colors.red}
+            className="cursor-pointer text-red-500 ml-1"
+        />
+    </li>
+);
