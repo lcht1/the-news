@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { useEffect, useMemo, useState } from "react";
-import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { useParams } from "react-router-dom";
 import { getArticles } from "../apis/newsApi/getArticles";
@@ -10,22 +9,29 @@ import { ArticleCard } from "../components/ArticleCard";
 import { FilterDropdown, Option } from "../components/FilterDropdown";
 import { Header } from "../components/Header";
 import { InputAutocomplete, Suggestion } from "../components/InputAutocomplete";
+import LoadingSkeleton from "../components/LoadingSkeleton";
+import { Pagination } from "../components/Pagination";
 import { dateOptions } from "../constants/dateOptions";
 import { timeAgo } from "../utils/timeAgo";
 
+const PAGE_SIZE = 50;
+
 export const Category = () => {
     const [currentPage, setCurrentPage] = useState(1);
-    const PAGE_SIZE = 50;
     const [selectedDate, setSelectedDate] = useState<Option | null>(null);
     const [selectedSource, setSelectedSource] = useState<Suggestion>(
         {} as Suggestion
     );
-    const dateStart =
-        selectedDate?.value &&
-        format(new Date(selectedDate.value), "yyyy-MM-dd");
+    const dateStart = selectedDate?.value
+        ? format(new Date(selectedDate.value), "yyyy-MM-dd")
+        : undefined;
 
     const { uri, category } = useParams();
-    const { data: articlesList, isLoading: isArticlesLoading } = useQuery({
+    const {
+        data: articlesList,
+        isLoading: isArticlesLoading,
+        error: articlesError,
+    } = useQuery({
         queryKey: [
             `article`,
             { category, dateStart, selectedSource, currentPage },
@@ -42,20 +48,20 @@ export const Category = () => {
         refetchOnWindowFocus: false,
     });
 
-    const filteredArticle = useMemo(() => {
+    const filteredArticles = useMemo(() => {
         return articlesList?.articles.results.filter(
             (article) => !article.isDuplicate && article.title
         );
     }, [articlesList]);
 
     useEffect(() => {
-        if (currentPage !== 1) setCurrentPage(1);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedSource, selectedDate]);
+        setCurrentPage(1);
+    }, [selectedDate, selectedSource]);
+
     return (
         <>
             <Header />
-            <main className="max-w-screen-md xl:max-w-screen-xl lg:max-w-screen-lg m-4 md:m-auto md:my-4 ">
+            <main className="max-w-screen-md xl:max-w-screen-xl lg:max-w-screen-lg m-4 md:m-auto md:my-4">
                 <div className="flex-col mb-10">
                     <span className="text-blue font-sans font-bold">
                         Filter by:
@@ -79,56 +85,49 @@ export const Category = () => {
 
                 <div className="flex items-center mb-4">
                     <div className="w-1 h-6 bg-blue mr-2"></div>
-
                     <h4 className="w-full flex flex-row items-center gap-2 cursor-pointer font-serif font-bold text-3xl text-gray mr-4">
                         {category}
                     </h4>
                 </div>
-                <div className="grid md:grid-cols-2 grid-cols-1">
-                    {isArticlesLoading
-                        ? Array(20)
-                              .fill(0)
-                              .map((_, index) => (
-                                  <div className="p-4" key={index}>
-                                      <Skeleton count={4} />
-                                  </div>
-                              ))
-                        : filteredArticle?.map((result, index) => (
-                              <>
-                                  <ArticleCard
-                                      key={index}
-                                      publishedAt={timeAgo(result.dateTime)}
-                                      image={result.image}
-                                      title={result.title}
-                                      url={result.url}
-                                      variant="row"
-                                  />
-                              </>
-                          ))}
+
+                <div className="grid md:grid-cols-2 grid-cols-1 gap-2">
+                    {isArticlesLoading ? (
+                        <LoadingSkeleton
+                            count={PAGE_SIZE}
+                            countLines={4}
+                            name="skeleton"
+                        />
+                    ) : articlesError ? (
+                        <p className="p-4 font-bold text-xs text-red">
+                            Failed to load articles. Try again later.
+                        </p>
+                    ) : filteredArticles?.length ? (
+                        filteredArticles.map((article) => (
+                            <ArticleCard
+                                key={article.uri}
+                                publishedAt={timeAgo(article.dateTime)}
+                                image={article.image}
+                                title={article.title}
+                                url={article.url}
+                                variant="row"
+                            />
+                        ))
+                    ) : (
+                        !isArticlesLoading && <span>No results.</span>
+                    )}
                 </div>
-                {filteredArticle?.length ? (
-                    <div className="flex justify-between items-center mt-4">
-                        <button
-                            disabled={currentPage === 1}
-                            onClick={() => setCurrentPage(currentPage - 1)}
-                            className="px-4 py-2 bg-blue-500 text-gray rounded-md"
-                        >
-                            Previous
-                        </button>
-                        <span>Page {currentPage}</span>
-                        <button
-                            disabled={
-                                articlesList &&
-                                articlesList.articles.results.length < PAGE_SIZE
-                            }
-                            onClick={() => setCurrentPage(currentPage + 1)}
-                            className="px-4 py-2 bg-blue-500 text-gray rounded-md"
-                        >
-                            Next
-                        </button>
-                    </div>
-                ) : (
-                    !isArticlesLoading && <span>No results.</span>
+
+                {filteredArticles && filteredArticles?.length > 0 && (
+                    <Pagination
+                        currentPage={currentPage}
+                        noMoreItems={
+                            articlesList &&
+                            articlesList.articles.results.length < PAGE_SIZE
+                        }
+                        setCurrentPage={() =>
+                            setCurrentPage((prev) => prev + 1)
+                        }
+                    />
                 )}
             </main>
         </>

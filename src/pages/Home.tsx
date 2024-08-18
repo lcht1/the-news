@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { IoIosRefresh, IoMdSettings } from "react-icons/io";
 import { MdKeyboardArrowRight } from "react-icons/md";
-import Skeleton from "react-loading-skeleton";
 import Modal from "react-modal";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -17,6 +16,7 @@ import { useArticlesByDisplayedCategories } from "../hooks/useArticlesByDisplaye
 import { useArticlesByPreferences } from "../hooks/useArticlesByPreferences";
 import useCategories from "../hooks/useCategories";
 
+import LoadingSkeleton from "../components/LoadingSkeleton";
 import { RootState } from "../store";
 import {
     setPreferredAuthors,
@@ -38,19 +38,22 @@ export const Home = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
 
-    const selectedItems = useSelector((state: RootState) => ({
+    const selectedPreferredItems = useSelector((state: RootState) => ({
         sources: state.preferences.preferredSources,
         categories: state.preferences.preferredCategories,
         authors: state.preferences.preferredAuthors,
     }));
 
-    const { isPreferredArticlesLoading, preferredArticles } =
-        useArticlesByPreferences({
-            categories: selectedItems.categories,
-            authors: selectedItems.authors,
-            sources: selectedItems.sources,
-            page: currentPage,
-        });
+    const {
+        isPreferredArticlesLoading,
+        preferredArticles,
+        hasError: errorPreferredArticles,
+    } = useArticlesByPreferences({
+        categories: selectedPreferredItems.categories,
+        authors: selectedPreferredItems.authors,
+        sources: selectedPreferredItems.sources,
+        page: currentPage,
+    });
 
     const {
         categories: defaultCategories,
@@ -83,29 +86,59 @@ export const Home = () => {
         [topFourMostPopularArticles]
     );
 
-    const { data: topHeadlines, isLoading: isTopHeadlinesLoading } = useQuery({
+    const {
+        data: topHeadlines,
+        isLoading: isTopHeadlinesLoading,
+        error: topHeadlineError,
+    } = useQuery({
         queryKey: ["topHeadlines"],
         queryFn: () => getTopHeadlines({ language: "en", pageSize: 10 }),
         staleTime: 1000 * 60 * 60 * 10,
     });
 
     const hasPreferences = [
-        selectedItems.sources,
-        selectedItems.categories,
-        selectedItems.authors,
+        selectedPreferredItems.sources,
+        selectedPreferredItems.categories,
+        selectedPreferredItems.authors,
     ].some((array) => Array.isArray(array) && array.length > 0);
 
-    const { articlesWithCategories, isResultsWithCategoriesLoading } =
+    const { articlesWithCategories, isResultsWithCategoriesLoading, hasError } =
         useArticlesByDisplayedCategories(defaultCategories);
 
     const handleRefreshPreferredArticles = () =>
         setCurrentPage((prevPage) => prevPage + 1);
 
-    const handleSave = () => {
-        dispatch(setPreferredSources(selectedItems.sources));
-        dispatch(setPreferredCategories(selectedItems.categories));
-        dispatch(setPreferredAuthors(selectedItems.authors));
-        setIsModalOpen(false);
+    const handleSelect = (
+        type: "sources" | "categories" | "authors",
+        item: Suggestion
+    ) => {
+        const updatedItems = [...selectedPreferredItems[type], item];
+        dispatch(setPreferredItems(type, updatedItems));
+    };
+
+    const handleRemove = (
+        type: "sources" | "categories" | "authors",
+        index: number
+    ) => {
+        const updatedItems = [...selectedPreferredItems[type]];
+        updatedItems.splice(index, 1);
+        dispatch(setPreferredItems(type, updatedItems));
+    };
+
+    const setPreferredItems = (
+        type: "sources" | "categories" | "authors",
+        items: Suggestion[]
+    ) => {
+        switch (type) {
+            case "sources":
+                return setPreferredSources(items);
+            case "categories":
+                return setPreferredCategories(items);
+            case "authors":
+                return setPreferredAuthors(items);
+            default:
+                throw new Error("Unknown preference type");
+        }
     };
 
     return (
@@ -118,33 +151,31 @@ export const Home = () => {
 
             <main className="max-w-screen-md xl:max-w-screen-xl lg:max-w-screen-lg m-4 md:m-auto md:my-4">
                 <section className="grid grid-cols-1 gap-y-4 lg:gap-4 lg:grid-cols-4">
-                    {isMostPopularLoading
-                        ? Array(6)
-                              .fill(0)
-                              .map((_, index) => (
-                                  <div
-                                      className={getColSpanClass(index, 6)}
-                                      key={index}
-                                  >
-                                      <Skeleton height={200} />
-                                  </div>
-                              ))
-                        : filteredMostPopularArticles?.map((article, index) => (
-                              <div
-                                  key={article.id}
-                                  className={getColSpanClass(
-                                      index,
-                                      filteredMostPopularArticles.length
-                                  )}
-                              >
-                                  <PopularArticleCard
-                                      title={article.title}
-                                      abstract={article.abstract}
-                                      photos={article.photos}
-                                      url={article.url}
-                                  />
-                              </div>
-                          ))}
+                    {isMostPopularLoading ? (
+                        <LoadingSkeleton
+                            count={6}
+                            key="most-popular-skeleton"
+                            height={200}
+                            colspan
+                        />
+                    ) : (
+                        filteredMostPopularArticles?.map((article, index) => (
+                            <div
+                                key={article.id}
+                                className={getColSpanClass(
+                                    index,
+                                    filteredMostPopularArticles.length
+                                )}
+                            >
+                                <PopularArticleCard
+                                    title={article.title}
+                                    abstract={article.abstract}
+                                    photos={article.photos}
+                                    url={article.url}
+                                />
+                            </div>
+                        ))
+                    )}
                 </section>
                 {hasPreferences && (
                     <section className="col-span-3 order-2 md:order-1 mt-8">
@@ -162,22 +193,17 @@ export const Home = () => {
                             </button>
                         </div>
                         {isPreferredArticlesLoading ? (
-                            Array(3)
-                                .fill(0)
-                                .map((_, index) => (
-                                    <div className="my-4" key={index}>
-                                        <div className="grid md:grid-cols-4 grid-cols-2 gap-4">
-                                            {Array(6)
-                                                .fill(0)
-                                                .map((_, index) => (
-                                                    <Skeleton
-                                                        key={index}
-                                                        height={200}
-                                                    />
-                                                ))}
-                                        </div>
-                                    </div>
-                                ))
+                            <div className="grid md:grid-cols-4 grid-cols-3 gap-4">
+                                <LoadingSkeleton
+                                    count={12}
+                                    height={200}
+                                    name="preferred-articles"
+                                />
+                            </div>
+                        ) : errorPreferredArticles ? (
+                            <p className="p-4 font-bold text-xs text-red">
+                                Failed to load articles. Try again later.
+                            </p>
                         ) : preferredArticles.length > 0 ? (
                             <div className="grid md:grid-cols-4 grid-cols-2 gap-4">
                                 {preferredArticles.map((article) =>
@@ -211,85 +237,87 @@ export const Home = () => {
                 )}
                 <div className="grid md:grid-cols-4 grid-cols-2 mt-12">
                     <section className="col-span-3 order-2 md:order-1">
-                        {isResultsWithCategoriesLoading
-                            ? Array(3)
-                                  .fill(0)
-                                  .map((_, index) => (
-                                      <div className="my-4" key={index}>
-                                          <Skeleton count={1} width={100} />
-                                          <div className="grid md:grid-cols-3 grid-cols-2 gap-4">
-                                              {Array(6)
-                                                  .fill(0)
-                                                  .map((_, index) => (
-                                                      <Skeleton
-                                                          key={index}
-                                                          height={200}
-                                                      />
-                                                  ))}
-                                          </div>
-                                      </div>
-                                  ))
-                            : articlesWithCategories?.map((article, index) => (
-                                  <div className="my-4" key={index}>
-                                      <div className="flex items-center">
-                                          <div className="w-1 h-6 bg-blue mr-2"></div>
-                                          <h4
-                                              className="w-full flex flex-row items-center gap-2 cursor-pointer font-serif font-bold text-3xl text-gray mr-4"
-                                              onClick={() =>
-                                                  navigate(
-                                                      `/category/${article?.categoryUri}`
-                                                  )
-                                              }
-                                          >
-                                              {article?.categoryLabel}
-                                              <MdKeyboardArrowRight
-                                                  size={24}
-                                                  className="mt-2"
-                                              />
-                                          </h4>
-                                      </div>
-                                      <div className="grid md:grid-cols-3 grid-cols-2 gap-4">
-                                          {article?.results?.map((result) => (
-                                              <ArticleCard
-                                                  key={result.uri}
-                                                  publishedAt={timeAgo(
-                                                      result.dateTime
-                                                  )}
-                                                  image={result.image}
-                                                  title={result.title}
-                                                  url={result.url}
-                                                  author={
-                                                      result?.authors[0]?.name
-                                                  }
-                                                  source={result?.source.title}
-                                              />
-                                          ))}
-                                      </div>
-                                  </div>
-                              ))}
+                        {isResultsWithCategoriesLoading ? (
+                            <div className="grid md:grid-cols-3 grid-cols-2 gap-4">
+                                <LoadingSkeleton
+                                    count={30}
+                                    height={200}
+                                    name="results-categories-skeleton"
+                                />
+                            </div>
+                        ) : hasError ? (
+                            <p className="p-4 font-bold text-xs text-red">
+                                Failed to load articles. Try again later.
+                            </p>
+                        ) : (
+                            articlesWithCategories?.map((article) => (
+                                <div
+                                    className="my-4"
+                                    key={article?.categoryUri}
+                                >
+                                    <div className="flex items-center">
+                                        <div className="w-1 h-6 bg-blue mr-2"></div>
+                                        <h4
+                                            className="w-full flex flex-row items-center gap-2 cursor-pointer font-serif font-bold text-3xl text-gray mr-4"
+                                            onClick={() =>
+                                                navigate(
+                                                    `/category/${article?.categoryUri}`
+                                                )
+                                            }
+                                        >
+                                            {article?.categoryLabel}
+                                            <MdKeyboardArrowRight
+                                                size={24}
+                                                className="mt-2"
+                                            />
+                                        </h4>
+                                    </div>
+                                    <div className="grid md:grid-cols-3 grid-cols-2 gap-4">
+                                        {article?.results?.map((result) => (
+                                            <ArticleCard
+                                                key={result.uri}
+                                                publishedAt={timeAgo(
+                                                    result.dateTime
+                                                )}
+                                                image={result.image}
+                                                title={result.title}
+                                                url={result.url}
+                                                author={
+                                                    result?.authors[0]?.name
+                                                }
+                                                source={result?.source.title}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            ))
+                        )}
                     </section>
-
                     <aside className="md:col-span-1 col-span-2 order-1">
                         <h4 className="p-4 text-xl font-bold text-blue">
                             In case you missed it...
                         </h4>
-                        {isTopHeadlinesLoading
-                            ? Array(6)
-                                  .fill(0)
-                                  .map((_, index) => (
-                                      <div className="p-2" key={index}>
-                                          <Skeleton count={4} />
-                                      </div>
-                                  ))
-                            : topHeadlines?.articles.map((article) => (
-                                  <ArticleCard
-                                      key={article.title}
-                                      author={article.author}
-                                      publishedAt={timeAgo(article.publishedAt)}
-                                      title={article.title}
-                                      url={article.url}
-                                  />
-                              ))}
+                        {isTopHeadlinesLoading ? (
+                            <LoadingSkeleton
+                                count={6}
+                                key="top-headlines-skeleton"
+                                countLines={4}
+                            />
+                        ) : topHeadlineError ? (
+                            <p className="p-4 font-bold text-xs text-red">
+                                Failed to load articles. Try again later.
+                            </p>
+                        ) : (
+                            topHeadlines?.articles.map((article) => (
+                                <ArticleCard
+                                    key={article.title}
+                                    author={article.author}
+                                    publishedAt={timeAgo(article.publishedAt)}
+                                    title={article.title}
+                                    url={article.url}
+                                />
+                            ))
+                        )}
                     </aside>
                 </div>
 
@@ -315,59 +343,19 @@ export const Home = () => {
                 >
                     <PreferencesModal
                         onRequestClose={() => setIsModalOpen(false)}
-                        selectedItems={selectedItems}
+                        selectedItems={selectedPreferredItems}
                         onSelect={{
-                            source: (source: Suggestion) => {
-                                dispatch(
-                                    setPreferredSources([
-                                        ...selectedItems.sources,
-                                        source,
-                                    ])
-                                );
-                            },
-                            category: (category: Suggestion) => {
-                                dispatch(
-                                    setPreferredCategories([
-                                        ...selectedItems.categories,
-                                        category,
-                                    ])
-                                );
-                            },
-                            author: (author: Suggestion) => {
-                                dispatch(
-                                    setPreferredAuthors([
-                                        ...selectedItems.authors,
-                                        author,
-                                    ])
-                                );
-                            },
+                            source: (source) => handleSelect("sources", source),
+                            category: (category) =>
+                                handleSelect("categories", category),
+                            author: (author) => handleSelect("authors", author),
                         }}
                         onRemove={{
-                            source: (index: number) => {
-                                const updatedSources = [
-                                    ...selectedItems.sources,
-                                ];
-                                updatedSources.splice(index, 1);
-                                dispatch(setPreferredSources(updatedSources));
-                            },
-                            category: (index: number) => {
-                                const updatedCategories = [
-                                    ...selectedItems.categories,
-                                ];
-                                updatedCategories.splice(index, 1);
-                                dispatch(
-                                    setPreferredCategories(updatedCategories)
-                                );
-                            },
-                            author: (index: number) => {
-                                const updatedAuthors = [
-                                    ...selectedItems.authors,
-                                ];
-                                updatedAuthors.splice(index, 1);
-                                dispatch(setPreferredAuthors(updatedAuthors));
-                            },
+                            source: (index) => handleRemove("sources", index),
+                            category: (index) =>
+                                handleRemove("categories", index),
+                            author: (index) => handleRemove("authors", index),
                         }}
-                        handleSave={handleSave}
                     />
                 </Modal>
             </main>

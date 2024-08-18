@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { useEffect, useMemo, useState } from "react";
-import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { useSearchParams } from "react-router-dom";
 import { getArticles } from "../apis/newsApi/getArticles";
@@ -11,14 +10,16 @@ import { ArticleCard } from "../components/ArticleCard";
 import { FilterDropdown, Option } from "../components/FilterDropdown";
 import { Header } from "../components/Header";
 import { InputAutocomplete, Suggestion } from "../components/InputAutocomplete";
+import LoadingSkeleton from "../components/LoadingSkeleton";
+import { Pagination } from "../components/Pagination";
 import { dateOptions } from "../constants/dateOptions";
 import { timeAgo } from "../utils/timeAgo";
+
+const PAGE_SIZE = 50;
 
 export const Search = () => {
     const [searchParams] = useSearchParams();
     const query = searchParams.get("query");
-
-    const PAGE_SIZE = 50;
 
     const [currentPage, setCurrentPage] = useState(1);
     const [selectedDate, setSelectedDate] = useState<Option | null>(null);
@@ -51,7 +52,7 @@ export const Search = () => {
         refetchOnWindowFocus: false,
     });
 
-    const filteredArticle = useMemo(() => {
+    const filteredArticles = useMemo(() => {
         return articlesList?.articles.results.filter(
             (article) => !article.isDuplicate && article.title
         );
@@ -94,51 +95,40 @@ export const Search = () => {
                     </div>
                 </div>
 
-                <div className="grid md:grid-cols-2 grid-cols-1">
-                    {isArticlesLoading
-                        ? Array(20)
-                              .fill(0)
-                              .map((_, index) => (
-                                  <div className="p-4" key={index}>
-                                      <Skeleton count={4} />
-                                  </div>
-                              ))
-                        : filteredArticle?.map((result, index) => (
-                              <>
-                                  <ArticleCard
-                                      key={index}
-                                      publishedAt={timeAgo(result.dateTime)}
-                                      image={result.image}
-                                      title={result.title}
-                                      url={result.url}
-                                      variant="row"
-                                  />
-                              </>
-                          ))}
+                <div className="grid md:grid-cols-2 grid-cols-1 gap-2">
+                    {isArticlesLoading ? (
+                        <LoadingSkeleton
+                            count={PAGE_SIZE}
+                            countLines={4}
+                            name="skeleton-search"
+                        />
+                    ) : filteredArticles?.length === 0 ? (
+                        <span className="p-4">No results.</span>
+                    ) : (
+                        filteredArticles &&
+                        filteredArticles.map((result) => (
+                            <ArticleCard
+                                key={result.uri}
+                                publishedAt={timeAgo(result.dateTime)}
+                                image={result.image}
+                                title={result.title}
+                                url={result.url}
+                                variant="row"
+                            />
+                        ))
+                    )}
                 </div>
-                {filteredArticle?.length ? (
-                    <div className="flex justify-between items-center mt-4">
-                        <button
-                            disabled={currentPage === 1}
-                            onClick={() => setCurrentPage(currentPage - 1)}
-                            className="px-4 py-2 bg-blue-500 text-gray rounded-md"
-                        >
-                            Previous
-                        </button>
-                        <span>Page {currentPage}</span>
-                        <button
-                            disabled={
-                                articlesList &&
-                                articlesList.articles.results.length < PAGE_SIZE
-                            }
-                            onClick={() => setCurrentPage(currentPage + 1)}
-                            className="px-4 py-2 bg-blue-500 text-gray rounded-md"
-                        >
-                            Next
-                        </button>
-                    </div>
-                ) : (
-                    !isArticlesLoading && <span>No results.</span>
+                {filteredArticles?.length && (
+                    <Pagination
+                        currentPage={currentPage}
+                        noMoreItems={
+                            articlesList &&
+                            articlesList.articles.results.length < PAGE_SIZE
+                        }
+                        setCurrentPage={() =>
+                            setCurrentPage((prev) => prev + 1)
+                        }
+                    />
                 )}
             </main>
         </>
