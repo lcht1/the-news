@@ -96,14 +96,14 @@ export const InputAutocomplete = ({
     };
 
     return (
-        <div className="relative inline-block text-left">
+        <div className="w-full relative inline-block text-left">
             <div className="flex items-center justify-between w-full rounded-md border border-gray shadow-sm px-4 py-1 bg-white">
                 <input
                     type="text"
                     value={inputValue}
                     onChange={handleInputChange}
                     placeholder={placeholder}
-                    className="bg-white border-none outline-none text-xs font-medium text-gray-700 placeholder-gray-400"
+                    className=" w-full bg-white border-none outline-none text-xs font-medium text-gray-700 placeholder-gray-400"
                 />
                 {inputValue ? (
                     <IoMdClose
