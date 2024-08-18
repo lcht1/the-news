@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { SearchInput } from "./SearchInput";
 
 type Props = {
-    categories?: { label: string | null; uri: string }[];
+    categories?: { label?: string | null; uri: string }[];
     isCategoriesLoading?: boolean;
     errorCategories?: unknown;
 };

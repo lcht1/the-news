@@ -30,7 +30,7 @@ export const FilterDropdown = ({
         <div className="relative inline-block text-left">
             <button
                 type="button"
-                className="inline-flex justify-between w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none"
+                className="inline-flex justify-between w-full rounded-md border border-gray-300 shadow-sm px-4 py-1 bg-white text-xs font-medium text-gray  focus:outline-none"
                 onClick={() => setIsOpen(!isOpen)}
             >
                 {selectedOption || label}
@@ -38,7 +38,7 @@ export const FilterDropdown = ({
                     className={`ml-2 transform ${
                         isOpen ? "rotate-180" : "rotate-0"
                     }`}
-                    size={20}
+                    size={15}
                 />
             </button>
 

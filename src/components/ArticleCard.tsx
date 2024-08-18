@@ -3,6 +3,7 @@ type Props = {
     publishedAt: string;
     url: string;
     author?: string;
+    source?: string;
     image?: string;
     variant?: "row" | "column";
 };
@@ -12,6 +13,7 @@ export const ArticleCard = ({
     url,
     author,
     image,
+    source,
     variant = "column",
 }: Props) => {
     return (
@@ -38,6 +40,9 @@ export const ArticleCard = ({
                     <span className="text-xs">{publishedAt}</span>
                     {author ? (
                         <span className="text-blue text-xs">|{author}</span>
+                    ) : null}
+                    {source ? (
+                        <span className="text-gray text-xs">|{source}</span>
                     ) : null}
                 </div>
             </div>

@@ -1,4 +1,6 @@
 export const extractCategoryLabel = (label: string) => {
-    const parts = label.split("/");
-    return parts.length > 1 && parts[1].trim() !== "" ? parts[1] : null;
+    if (label) {
+        const parts = label?.split("/");
+        return parts.length > 1 && parts[1].trim() !== "" ? parts[1] : null;
+    }
 };

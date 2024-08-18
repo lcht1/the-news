@@ -1,7 +1,7 @@
 import { useQueries } from "@tanstack/react-query";
 import { getArticles } from "../apis/newsApi/getArticles";
 
-type Category = { label: string | null; uri: string };
+type Category = { label?: string | null; uri?: string };
 export const useArticlesByDisplayedCategories = (
     displayedCategories: Category[]
 ) => {

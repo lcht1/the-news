@@ -12,7 +12,7 @@ type Params = {
     dateStart?: string;
 };
 
-type Article = {
+export type Article = {
     uri: string;
     lang: string;
     isDuplicate: boolean;
@@ -30,7 +30,7 @@ type Article = {
         dataType: string;
         title: string;
     };
-    authors: string[];
+    authors: { name: string }[];
     concepts: {
         uri: string;
         type: string;

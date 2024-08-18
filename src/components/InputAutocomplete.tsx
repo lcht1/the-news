@@ -4,17 +4,22 @@ import React, { useEffect, useMemo, useState } from "react";
 import { IoMdClose } from "react-icons/io";
 import { extractCategoryLabel } from "../hooks/extractCategoryLabel";
 
-export type Suggestion =
-    | { uri: string; title?: string; label?: never }
-    | { uri: string; title?: never; label: string };
+export type Suggestion = {
+    uri: string;
+    title?: string;
+    label?: string;
+    name?: string;
+};
 
 type Props = {
+    name?: string;
     fetchSuggestions: (query: string) => Promise<Suggestion[]>;
     onSuggestionClick: (suggestion: Suggestion) => void;
     placeholder?: string;
     valueKey: keyof Suggestion;
     labelKey: keyof Suggestion;
     extractLabel?: boolean;
+    clearOnSelection?: boolean;
 };
 
 const getUniqueLabels = (suggestions: Suggestion[]): Suggestion[] => {
@@ -32,11 +37,13 @@ const getUniqueLabels = (suggestions: Suggestion[]): Suggestion[] => {
 };
 
 export const InputAutocomplete = ({
+    name,
     fetchSuggestions,
     onSuggestionClick,
     placeholder = "Search...",
     valueKey,
     labelKey,
+    clearOnSelection = false,
     extractLabel = false,
 }: Props) => {
     const [inputValue, setInputValue] = useState("");
@@ -46,7 +53,6 @@ export const InputAutocomplete = ({
     const debouncedSearch = debounce((value: string) => {
         setDebouncedInputValue(value);
     }, 1000);
-
     useEffect(() => {
         debouncedSearch(inputValue);
     }, [inputValue, debouncedSearch]);
@@ -56,7 +62,7 @@ export const InputAutocomplete = ({
         isLoading,
         error,
     } = useQuery({
-        queryKey: ["suggestions", debouncedInputValue],
+        queryKey: ["suggestions", debouncedInputValue, name],
         queryFn: () => fetchSuggestions(debouncedInputValue),
         enabled: !!debouncedInputValue,
         staleTime: 1000 * 60 * 5,
@@ -77,26 +83,27 @@ export const InputAutocomplete = ({
             ? extractCategoryLabel(suggestion[labelKey] as string)
             : (suggestion[labelKey] as string);
 
-        setInputValue(label ?? "");
+        setInputValue(clearOnSelection ? "" : label ?? "");
         onSuggestionClick(suggestion);
+
         setIsDropdownOpen(false);
     };
 
     const handleClearInput = () => {
         setInputValue("");
-        onSuggestionClick({ uri: "" }); // Ajuste se necessário
+        onSuggestionClick({ uri: "" });
         setIsDropdownOpen(false);
     };
 
     return (
         <div className="relative inline-block text-left">
-            <div className="flex items-center justify-between w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white">
+            <div className="flex items-center justify-between w-full rounded-md border border-gray shadow-sm px-4 py-1 bg-white">
                 <input
                     type="text"
                     value={inputValue}
                     onChange={handleInputChange}
                     placeholder={placeholder}
-                    className="bg-white border-none outline-none text-sm font-medium text-gray-700 placeholder-gray-400"
+                    className="bg-white border-none outline-none text-xs font-medium text-gray-700 placeholder-gray-400"
                 />
                 {inputValue ? (
                     <IoMdClose
