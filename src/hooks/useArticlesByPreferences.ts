@@ -60,6 +60,8 @@ export const useArticlesByPreferences = ({
         (query) => query.isLoading
     );
 
+    const hasError = articleQueries.some((query) => query.isError);
+
     const preferredArticles = articleQueries
         .map((query) => query.data?.articles.results)
         .flat()
@@ -71,5 +73,6 @@ export const useArticlesByPreferences = ({
     return {
         preferredArticles,
         isPreferredArticlesLoading,
+        hasError,
     };
 };

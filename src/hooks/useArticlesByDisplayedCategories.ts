@@ -16,6 +16,7 @@ export const useArticlesByDisplayedCategories = (
     const isResultsWithCategoriesLoading = articleQueries.some(
         (query) => query.isLoading
     );
+    const hasError = articleQueries.some((query) => query.isError);
 
     const articlesWithCategories = articleQueries
         .map((query, index) => {
@@ -33,5 +34,5 @@ export const useArticlesByDisplayedCategories = (
         })
         .filter((item) => item?.categoryLabel);
 
-    return { articlesWithCategories, isResultsWithCategoriesLoading };
+    return { articlesWithCategories, isResultsWithCategoriesLoading, hasError };
 };
