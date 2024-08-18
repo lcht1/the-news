@@ -1,50 +1,59 @@
-# React + TypeScript + Vite
+# Frontend Take-Home Challenge
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Hi there!
 
-Currently, two official plugins are available:
+Welcome to the take-home challenge. I’m excited to showcase my skills and experience through this project. The goal was to create a user interface for a news aggregator website that pulls articles from various sources and displays them in a clean, easy-to-read format.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## What I’ve Done
 
-## Expanding the ESLint configuration
+### Requirements
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+1. **Article Search and Filtering**:
 
-- Configure the top-level `parserOptions` property like this:
+    - Implemented a feature that allows users to search for articles by keyword.
+    - Added filters so users can refine results by date, category, and source.
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+2. **Personalized News Feed**:
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+    - Enabled users to customize their news feed by selecting their preferred sources, categories, and authors.
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+3. **Mobile-Responsive Design**:
+    - Ensured the site is optimized for mobile devices, providing a smooth experience on any screen size.
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+### Data Sources
+
+I chose three APIs to source articles for the site:
+
+1. **NewsAPI**: A comprehensive API providing access to articles from over 70,000 news sources, including major newspapers, magazines, and blogs.
+
+2. **The New York Times**: The New York Times API offers articles from one of the most respected news sources in the world.
+
+3. **NewsAPI.org**: This API provides access to news articles from thousands of sources,
+   including news publications, blogs, and magazines.
+
+### Getting Started
+
+To run the project locally, follow these steps:
+
+1. **Clone the Repository**:
+
+    ```bash
+    git clone https://github.com/lcht1/the-news.git
+
+    ```
+
+2. **Run the Docker container**:
+
+````bash
+   docker build -t the-news .
+   docker run --env-file .env -p 5173:5173 the-news
+   ```
+````
+
+### Environment Variables
+
+For your convenience, I have included the `.env` file with the necessary API keys and URLs required for the project. This will allow you to run the application immediately without the need to create or configure your own API keys. The `.env` file should be placed in the root directory and is already configured to work with the project.
+
+### Note
+
+Please note that the `.env` file contains sensitive information and should be handled with care. It's included in this repository to simplify the review process and ensure that you can test the application without any additional setup.
