@@ -17,7 +17,7 @@ const persister = createSyncStoragePersister({
 });
 createRoot(document.getElementById("root")!).render(
     <StrictMode>
-        <Provider store={store}>
+        <Provider store={store} stabilityCheck="never">
             <PersistGate loading={null} persistor={persistor}>
                 <PersistQueryClientProvider
                     client={queryClient}
