@@ -57,3 +57,11 @@ For your convenience, I have included the `.env` file with the necessary API key
 ### Note
 
 Please note that the `.env` file contains sensitive information and should be handled with care. It's included in this repository to simplify the review process and ensure that you can test the application without any additional setup.
+
+### API Note
+
+The API call to NewsAPI.org does not work when running the development server with the `--host` option. To ensure this API functions correctly, please run the application locally without using the `--host` flag:
+
+```bash
+yarn dev
+```
