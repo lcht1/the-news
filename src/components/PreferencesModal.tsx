@@ -84,7 +84,7 @@ export const PreferencesModal = ({
                             name="sources"
                         />
                     </div>
-                    <ul className="flex flex-row flex-wrap gap-2">
+                    <ul className="flex flex-row flex-wrap gap-2 mt-2">
                         {selectedItems.sources.map((source, index) => (
                             <SelectedItem
                                 onRemove={() => onRemove.source(index)}
@@ -113,7 +113,7 @@ export const PreferencesModal = ({
                             />
                         </div>
                     </div>
-                    <ul className="flex flex-row flex-wrap gap-2">
+                    <ul className="flex flex-row flex-wrap gap-2 mt-2">
                         {selectedItems.categories.map((category, index) => (
                             <SelectedItem
                                 onRemove={() => onRemove.category(index)}
@@ -139,7 +139,7 @@ export const PreferencesModal = ({
                             name="authors"
                         />
                     </div>
-                    <ul className="flex flex-row flex-wrap gap-2">
+                    <ul className="flex flex-row flex-wrap gap-2 mt-2">
                         {selectedItems.authors.map((author, index) => (
                             <SelectedItem
                                 onRemove={() => onRemove.author(index)}
@@ -167,7 +167,10 @@ type SelectedItemProps = {
     onRemove: () => void;
 };
 const SelectedItem = ({ title, onRemove, uri }: SelectedItemProps) => (
-    <li key={uri} className="flex items-center text-xs">
+    <li
+        key={uri}
+        className="flex items-center text-xs border-slate-400 border rounded-md p-1"
+    >
         {title}
         <IoMdClose
             onClick={onRemove}
