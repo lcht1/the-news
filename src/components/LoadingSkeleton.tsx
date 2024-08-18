@@ -1,4 +1,5 @@
 import Skeleton from "react-loading-skeleton";
+import { getColSpanClass } from "../utils/getColSpanClass";
 type Props = {
     count?: number;
     countLines?: number;
@@ -7,9 +8,6 @@ type Props = {
     name?: string;
     colspan?: boolean;
 };
-
-const getColSpanClass = (index: number, length: number) =>
-    index === 0 || index === length - 1 ? "col-span-2" : "col-span-1";
 
 export const LoadingSkeleton = ({
     count = 1,

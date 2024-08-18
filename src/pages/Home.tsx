@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
+import { FaArrowUp, FaPen } from "react-icons/fa";
 import { IoIosRefresh } from "react-icons/io";
-import { FaPen, FaArrowUp } from "react-icons/fa";
 import { MdKeyboardArrowRight } from "react-icons/md";
 import Modal from "react-modal";
 import { useDispatch, useSelector } from "react-redux";
@@ -18,6 +18,7 @@ import { useArticlesByPreferences } from "../hooks/useArticlesByPreferences";
 import useCategories from "../hooks/useCategories";
 
 import LoadingSkeleton from "../components/LoadingSkeleton";
+import useScrollToShow from "../hooks/useScrollToShow";
 import { RootState } from "../store";
 import {
     setPreferredAuthors,
@@ -25,17 +26,14 @@ import {
     setPreferredSources,
 } from "../store/preferences.store";
 import { customTheme } from "../theme/customTheme";
+import { getColSpanClass } from "../utils/getColSpanClass";
 import { timeAgo } from "../utils/timeAgo";
-import useScrollToShow from "../hooks/useScrollToShow";
 
 Modal.setAppElement("#root");
 
 const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
 };
-
-const getColSpanClass = (index: number, length: number) =>
-    index === 0 || index === length - 1 ? "col-span-2" : "col-span-1";
 
 export const Home = () => {
     const navigate = useNavigate();
