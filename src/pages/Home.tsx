@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { IoIosRefresh, IoMdSettings } from "react-icons/io";
+import { IoIosRefresh } from "react-icons/io";
+import { FaPen } from "react-icons/fa";
 import { MdKeyboardArrowRight } from "react-icons/md";
 import Modal from "react-modal";
 import { useDispatch, useSelector } from "react-redux";
@@ -326,10 +327,7 @@ export const Home = () => {
                         onClick={() => setIsModalOpen(true)}
                         className="bg-blue rounded-full p-4 shadow-lg"
                     >
-                        <IoMdSettings
-                            size={30}
-                            color={customTheme.colors.white}
-                        />
+                        <FaPen size={20} color={customTheme.colors.white} />
                     </button>
                 </div>
 

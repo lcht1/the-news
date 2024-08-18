@@ -30,7 +30,7 @@ export const Header = ({
                 </div>
                 {categories ? (
                     <nav className="bg-gray  flex justify-center relative p-5">
-                        <ul className="flex space-x-4 flex-wrap max-w-3xl  content-center items-center justify-center gap-1.5">
+                        <ul className="flex space-x-4 flex-wrap   content-center items-center justify-center gap-1.5">
                             {isCategoriesLoading ? (
                                 <div className="text-white">
                                     Loading categories...
@@ -40,7 +40,7 @@ export const Header = ({
                                     Error loading categories.
                                 </div>
                             ) : (
-                                <ul className="flex space-x-4 flex-wrap max-w-3xl content-center items-center justify-center gap-1.5">
+                                <ul className="flex space-x-4 flex-wrap content-center items-center justify-center gap-1.5 mx-4">
                                     {categories.map((category, index) => {
                                         return (
                                             <li key={index}>
