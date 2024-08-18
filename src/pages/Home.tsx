@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { IoIosRefresh } from "react-icons/io";
-import { FaPen } from "react-icons/fa";
+import { FaPen, FaArrowUp } from "react-icons/fa";
 import { MdKeyboardArrowRight } from "react-icons/md";
 import Modal from "react-modal";
 import { useDispatch, useSelector } from "react-redux";
@@ -26,8 +26,13 @@ import {
 } from "../store/preferences.store";
 import { customTheme } from "../theme/customTheme";
 import { timeAgo } from "../utils/timeAgo";
+import useScrollToShow from "../hooks/useScrollToShow";
 
 Modal.setAppElement("#root");
+
+const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+};
 
 const getColSpanClass = (index: number, length: number) =>
     index === 0 || index === length - 1 ? "col-span-2" : "col-span-1";
@@ -141,6 +146,7 @@ export const Home = () => {
                 throw new Error("Unknown preference type");
         }
     };
+    const showScrollToTopButton = useScrollToShow(100);
 
     return (
         <>
@@ -322,7 +328,18 @@ export const Home = () => {
                     </aside>
                 </div>
 
-                <div className="fixed bottom-4 right-4">
+                <div className="fixed bottom-4 right-4 flex flex-col gap-2">
+                    {showScrollToTopButton && (
+                        <button
+                            onClick={scrollToTop}
+                            className="bg-white rounded-full p-4 shadow-lg"
+                        >
+                            <FaArrowUp
+                                size={20}
+                                color={customTheme.colors.blue}
+                            />
+                        </button>
+                    )}
                     <button
                         onClick={() => setIsModalOpen(true)}
                         className="bg-blue rounded-full p-4 shadow-lg"
