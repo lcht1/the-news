@@ -18,5 +18,8 @@ const useScrollToShow = (threshold = 100) => {
 
     return isVisible;
 };
+const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+};
 
-export default useScrollToShow;
+export { scrollToTop, useScrollToShow };

@@ -5,6 +5,7 @@ import "react-loading-skeleton/dist/skeleton.css";
 import { useParams } from "react-router-dom";
 import { getArticles } from "../apis/newsApi/getArticles";
 import { getSources } from "../apis/newsApi/getSources";
+import { ArrowScrollToUp } from "../components/ArrowScrolToUp";
 import { ArticleCard } from "../components/ArticleCard";
 import { FilterDropdown, Option } from "../components/FilterDropdown";
 import { Header } from "../components/Header";
@@ -12,8 +13,9 @@ import { InputAutocomplete, Suggestion } from "../components/InputAutocomplete";
 import LoadingSkeleton from "../components/LoadingSkeleton";
 import { Pagination } from "../components/Pagination";
 import { dateOptions } from "../constants/dateOptions";
-import { timeAgo } from "../utils/timeAgo";
 import useCategories from "../hooks/useCategories";
+import { useScrollToShow } from "../hooks/useScroll";
+import { timeAgo } from "../utils/timeAgo";
 
 const PAGE_SIZE = 50;
 
@@ -64,6 +66,7 @@ export const Category = () => {
         setCurrentPage(1);
     }, [selectedDate, selectedSource]);
 
+    const showScrollToTopButton = useScrollToShow();
     return (
         <>
             <Header
@@ -125,6 +128,11 @@ export const Category = () => {
                         !isArticlesLoading && <span>No results.</span>
                     )}
                 </div>
+                {showScrollToTopButton && (
+                    <div className="fixed bottom-4 right-4 flex flex-col gap-2">
+                        <ArrowScrollToUp />
+                    </div>
+                )}
 
                 {filteredArticles && filteredArticles?.length > 0 && (
                     <Pagination

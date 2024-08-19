@@ -6,6 +6,7 @@ import { useSearchParams } from "react-router-dom";
 import { getArticles } from "../apis/newsApi/getArticles";
 import { getCategories } from "../apis/newsApi/getCategories";
 import { getSources } from "../apis/newsApi/getSources";
+import { ArrowScrollToUp } from "../components/ArrowScrolToUp";
 import { ArticleCard } from "../components/ArticleCard";
 import { FilterDropdown, Option } from "../components/FilterDropdown";
 import { Header } from "../components/Header";
@@ -13,6 +14,7 @@ import { InputAutocomplete, Suggestion } from "../components/InputAutocomplete";
 import LoadingSkeleton from "../components/LoadingSkeleton";
 import { Pagination } from "../components/Pagination";
 import { dateOptions } from "../constants/dateOptions";
+import { useScrollToShow } from "../hooks/useScroll";
 import { timeAgo } from "../utils/timeAgo";
 
 const PAGE_SIZE = 50;
@@ -62,6 +64,9 @@ export const Search = () => {
         if (currentPage !== 1) setCurrentPage(1);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedSource, selectedDate]);
+
+    const showScrollToTopButton = useScrollToShow();
+
     return (
         <>
             <Header />
@@ -117,6 +122,12 @@ export const Search = () => {
                         ))
                     )}
                 </div>
+                {showScrollToTopButton && (
+                    <div className="fixed bottom-4 right-4 flex flex-col gap-2">
+                        <ArrowScrollToUp />
+                    </div>
+                )}
+
                 {filteredArticles?.length && (
                     <Pagination
                         currentPage={currentPage}

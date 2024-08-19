@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { FaArrowUp, FaPen } from "react-icons/fa";
+import { FaPen } from "react-icons/fa";
 import { IoIosRefresh } from "react-icons/io";
 import { MdKeyboardArrowRight } from "react-icons/md";
 import Modal from "react-modal";
@@ -17,8 +17,8 @@ import { useArticlesByDisplayedCategories } from "../hooks/useArticlesByDisplaye
 import { useArticlesByPreferences } from "../hooks/useArticlesByPreferences";
 import useCategories from "../hooks/useCategories";
 
+import { ArrowScrollToUp } from "../components/ArrowScrolToUp";
 import LoadingSkeleton from "../components/LoadingSkeleton";
-import useScrollToShow from "../hooks/useScrollToShow";
 import { RootState } from "../store";
 import {
     setPreferredAuthors,
@@ -28,12 +28,9 @@ import {
 import { customTheme } from "../theme/customTheme";
 import { getColSpanClass } from "../utils/getColSpanClass";
 import { timeAgo } from "../utils/timeAgo";
+import { useScrollToShow } from "../hooks/useScroll";
 
 Modal.setAppElement("#root");
-
-const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-};
 
 export const Home = () => {
     const navigate = useNavigate();
@@ -144,7 +141,8 @@ export const Home = () => {
                 throw new Error("Unknown preference type");
         }
     };
-    const showScrollToTopButton = useScrollToShow(100);
+
+    const showScrollToTopButton = useScrollToShow();
 
     return (
         <>
@@ -327,17 +325,7 @@ export const Home = () => {
                 </div>
 
                 <div className="fixed bottom-4 right-4 flex flex-col gap-2">
-                    {showScrollToTopButton && (
-                        <button
-                            onClick={scrollToTop}
-                            className="bg-white rounded-full p-4 shadow-lg"
-                        >
-                            <FaArrowUp
-                                size={20}
-                                color={customTheme.colors.blue}
-                            />
-                        </button>
-                    )}
+                    {showScrollToTopButton && <ArrowScrollToUp />}
                     <button
                         onClick={() => setIsModalOpen(true)}
                         className="bg-blue rounded-full p-4 shadow-lg"
